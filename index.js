@@ -22,7 +22,7 @@ const { getAuth, createUserWithEmailAndPassword,signInWithEmailAndPassword,signO
 
 //conexion de mongo
 const dbConnect = async () => {
-    const db_url = 'mongodb+srv://admin:6Ikry9U4a88k1ktY@mininetflixdatabase.kgwvbmp.mongodb.net/admin?retryWrites=true&w=majority&appName=MiniNetflixDatabase';
+    const db_url = 'mongodb+srv://admin:6Ikry9U4a88k1ktY@mininetflixdatabase.kgwvbmp.mongodb.net/examen2?retryWrites=true&w=majority&appName=MiniNetflixDatabase';
     try {
         await mongoose.connect(db_url);
         console.log('La Base de datos se ha conectado correctamente');
@@ -30,6 +30,7 @@ const dbConnect = async () => {
         console.log('La base de datos ha dado un error:', err);
     }
 }
+dbConnect();
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -42,9 +43,11 @@ const postEsquema = new mongoose.Schema(
     {
         titulo: String,
         descripcion: String,
-        usuarioId: String
+        usuarioEmail: String
     }
 );
+
+const postUsuario = mongoose.model('post', postEsquema);
 
 // Ruta para crear usuario, la ruta recibe el email y la password del usuario
 app.post('/createUser', async (req, res) => {
@@ -84,9 +87,20 @@ app.post('/logOut', async (req, res) => {
     }
 });
 
-//Ruta para crear un post en mongo
+//Ruta para crear un post en mongo PREGUNTAR SI EL USUARIO DEBE MANDAR EL CORREO DEL USUARIO O SI ES EL USUARIO ACTUAL
 app.post('/createPost', async (req,res)=>{
+    const email = req.body.email;
+    const titulo = req.body.titulo;
+    const descripcion = req.body.descripcion;
 
+    const post = new postUsuario({
+        titulo:titulo,
+        descripcion:descripcion,
+        usuarioEmail:email
+    });
+
+    const response = await post.save();
+    res.status(200).send("Post creado con exito!");
 })
 
 // Iniciar el servidor

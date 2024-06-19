@@ -51,13 +51,14 @@ app.post('/logIn', async (req, res) => {
     }
 });
 
+//Ruta para cerrar sesion, la ruta no recibe parametros
 app.post('/logOut', async (req, res) => {
     const auth = getAuth(firebaseApp);
     try {
         await signOut(auth);
-        res.status(200).send("Sesión cerrada con éxito");
+        res.status(200).send("Sesión cerrada con éxito! Nos vemos pronto :D");
     } catch (err) {
-        res.status(500).send('Error al cerrar sesión: ' + err.message);
+        res.status(500).send("Error al cerrar sesión: " + err.message);
     }
 });
 

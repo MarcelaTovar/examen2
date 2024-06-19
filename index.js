@@ -31,12 +31,13 @@ app.post('/createUser', async (req, res) => {
     const password = req.body.password;
     try {
         const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
-        res.status(200).send('Usuario creado con exito' + email);
+        res.status(200).send("Usuario creado con exito" + email);
     } catch (error) {
-        res.status(500).send('Usuario no creado con exito');
+        res.status(500).send("Usuario no creado con exito");
     }
 });
 
+// Ruta para loguear usuario, la ruta recibe el email y la password del usuario
 app.post('/logIn', async (req, res) => {
     const auth = getAuth(firebaseApp);
     const email = req.body.email;
@@ -44,9 +45,9 @@ app.post('/logIn', async (req, res) => {
 
     try {
         const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-        res.status(200).send("Sesión inciada con éxito");
+        res.status(200).send("Sesión inciada con éxito! Bienvenido de vuelta " +email;
     } catch (err) {
-        res.status(500).send('Error al iniciar sesion: ' + err.message);
+        res.status(500).send("Error al iniciar sesion: " + err.message);
     }
 });
 

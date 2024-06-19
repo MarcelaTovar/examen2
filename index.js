@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const bodyParser = require('body-parser');
+const { MongoClient } = require('mongodb');
 
 const { initializeApp } = require("firebase/app");
 
@@ -18,6 +19,15 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const { getAuth, createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut } = require('firebase/auth')
 
+const dbConnect = async () => {
+    const db_url = 'mongodb+srv://admin:6Ikry9U4a88k1ktY@mininetflixdatabase.kgwvbmp.mongodb.net/admin?retryWrites=true&w=majority&appName=MiniNetflixDatabase';
+    try {
+        await MongoClient.connect(db_url);
+        console.log('La Base de datos se ha conectado correctamente');
+    } catch (err) {
+        console.log('La base de datos ha dado un error:', err);
+    }
+}
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -31,7 +41,7 @@ app.post('/createUser', async (req, res) => {
     const password = req.body.password;
     try {
         const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
-        res.status(200).send("Usuario creado con exito" + email);
+        res.status(200).send("Usuario creado con exito");
     } catch (error) {
         res.status(500).send("Usuario no creado con exito");
     }
@@ -45,7 +55,7 @@ app.post('/logIn', async (req, res) => {
 
     try {
         const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-        res.status(200).send("Sesión inciada con éxito! Bienvenido de vuelta " +email;
+        res.status(200).send("Sesión inciada con éxito! Bienvenido de vuelta ");
     } catch (err) {
         res.status(500).send("Error al iniciar sesion: " + err.message);
     }

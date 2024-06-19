@@ -3,6 +3,7 @@ const app = express();
 const port = 3000;
 const bodyParser = require('body-parser');
 const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 
 const { initializeApp } = require("firebase/app");
 
@@ -19,10 +20,11 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const { getAuth, createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut } = require('firebase/auth')
 
+//conexion de mongo
 const dbConnect = async () => {
     const db_url = 'mongodb+srv://admin:6Ikry9U4a88k1ktY@mininetflixdatabase.kgwvbmp.mongodb.net/admin?retryWrites=true&w=majority&appName=MiniNetflixDatabase';
     try {
-        await MongoClient.connect(db_url);
+        await mongoose.connect(db_url);
         console.log('La Base de datos se ha conectado correctamente');
     } catch (err) {
         console.log('La base de datos ha dado un error:', err);
@@ -33,6 +35,16 @@ const dbConnect = async () => {
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+
+//Esquemas de mongo, el id es el proporcionado por firebase
+const postEsquema = new mongoose.Schema(
+    {
+        titulo: String,
+        descripcion: String,
+        usuarioId: String
+    }
+);
 
 // Ruta para crear usuario, la ruta recibe el email y la password del usuario
 app.post('/createUser', async (req, res) => {
@@ -72,6 +84,10 @@ app.post('/logOut', async (req, res) => {
     }
 });
 
+//Ruta para crear un post en mongo
+app.post('/createPost', async (req,res)=>{
+
+})
 
 // Iniciar el servidor
 app.listen(port, () => {

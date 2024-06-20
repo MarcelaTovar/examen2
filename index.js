@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const port = 3000;
@@ -8,13 +9,14 @@ const mongoose = require('mongoose');
 const { initializeApp } = require("firebase/app");
 const { CreateUserValidator, LogInValidator, createPostValidator, listarPostValidator, editarPostValidator, deletePostValidator } = require('./validators/Validators')
 
+//No se puse el .env/ en .gitignore para facilitar la revision
 const firebaseConfig = {
-    apiKey: "AIzaSyDpWoLxzEwA93vHht5InD3aLpFyTw6Nd84",
-    authDomain: "examen-a9633.firebaseapp.com",
-    projectId: "examen-a9633",
-    storageBucket: "examen-a9633.appspot.com",
-    messagingSenderId: "434903720542",
-    appId: "1:434903720542:web:77f01dd17e531051724acf"
+    apiKey: process.env.apiKey,
+    authDomain: process.env.authDomain,
+    projectId: process.env.projectId,
+    storageBucket: process.env.storageBucket,
+    messagingSenderId: process.env.messagingSenderId,
+    appId: process.env.appId
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -22,7 +24,7 @@ const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sig
 
 //conexion de mongo
 const dbConnect = async () => {
-    const db_url = 'mongodb+srv://admin:6Ikry9U4a88k1ktY@mininetflixdatabase.kgwvbmp.mongodb.net/examen2?retryWrites=true&w=majority&appName=MiniNetflixDatabase';
+    const db_url = process.env.db_url;
     try {
         await mongoose.connect(db_url);
         console.log('La Base de datos se ha conectado correctamente');
@@ -63,6 +65,7 @@ app.post('/createUser', CreateUserValidator, async (req, res) => {
         res.status(500).send("Usuario no creado con exito");
     }
 });
+
 /**
  * Ruta para loguear usuario, la ruta recibe el email y la password del usuario
  */
@@ -119,6 +122,7 @@ app.get('/listarPost', listarPostValidator, async (req, res) => {
     const posts = await postUsuario.find();
     res.status(200).send(posts);
 })
+
 /**
  * Ruta para editar un post especifico en mongo
  */

@@ -103,6 +103,12 @@ app.post('/createPost', async (req,res)=>{
     res.status(200).send("Post creado con exito!");
 })
 
+//Ruta para listar todos los post de mongo
+app.get('/listarPost', async (req,res) =>{
+    const posts = await postUsuario.find();
+    res.status(200).send(posts);
+})
+
 // Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor escuchando en http://localhost:${port}`);

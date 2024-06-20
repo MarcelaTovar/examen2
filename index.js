@@ -109,6 +109,20 @@ app.get('/listarPost', async (req,res) =>{
     res.status(200).send(posts);
 })
 
+//Ruta para editar un post especifico en mongo
+app.put('/editarPost/:id', async(req,res)=>{
+    const { id } = req.params;
+    const post = await postUsuario.findById(id);
+    const { titulo, descripcion } = req.body;
+    if(titulo){
+        post.titulo = titulo;
+    }
+    if (descripcion){
+        post.descripcion = descripcion;
+    }
+    await post.save();
+    res.status(200).send("Actualizacion exitosa!")
+})
 // Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor escuchando en http://localhost:${port}`);

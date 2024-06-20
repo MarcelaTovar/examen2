@@ -18,7 +18,6 @@ const LogInValidator = [
 ];
 
 const createPostValidator = [
-    check("email").exists().notEmpty().withMessage('Email es requerido.'),
     check("titulo").exists().notEmpty().withMessage('Titulo es requerido.'),
     check("descripcion").exists().notEmpty().withMessage('Descripcion es requerida.'),
     (req, res, next) => {

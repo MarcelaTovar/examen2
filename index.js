@@ -7,7 +7,7 @@ const { MongoClient } = require('mongodb');
 const mongoose = require('mongoose');
 
 const { initializeApp } = require("firebase/app");
-const { CreateUserValidator, LogInValidator, createPostValidator, listarPostValidator, editarPostValidator, deletePostValidator } = require('./validators/Validators')
+const { CreateUserValidator, LogInValidator, createPostValidator, listarPostValidator, editarPostValidator, deletePostValidator, currentUser } = require('./validators/Validators')
 
 //No se puse el .env/ en .gitignore para facilitar la revision
 const firebaseConfig = {
@@ -45,7 +45,8 @@ const postEsquema = new mongoose.Schema(
     {
         titulo: String,
         descripcion: String,
-        usuarioEmail: String
+        usuarioEmail: String,
+        fechaPublicacion: { type: Date, default: Date.now }
     }
 );
 
@@ -60,7 +61,7 @@ app.post('/createUser', CreateUserValidator, async (req, res) => {
     const password = req.body.password;
     try {
         const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
-        res.status(200).send("Usuario creado con exito");
+        res.status(200).send("Usuario creado con exito: " + email);
     } catch (error) {
         res.status(500).send("Usuario no creado con exito");
     }
@@ -71,25 +72,39 @@ app.post('/createUser', CreateUserValidator, async (req, res) => {
  */
 app.post('/logIn', LogInValidator, async (req, res) => {
     const auth = getAuth(firebaseApp);
+    const user = auth.currentUser;
+
+    if (user) {
+        res.status(401).send("Ya hay cuenta iniciada" + user.email);
+        return;
+    }
+
     const email = req.body.email;
     const password = req.body.password;
-
     try {
         const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-        res.status(200).send("Sesión inciada con éxito! Bienvenido de vuelta ");
+        res.status(200).send("Sesión iniciada con éxito! Bienvenido de vuelta " + email);
     } catch (err) {
-        res.status(500).send("Error al iniciar sesion: " + err.message);
+        res.status(500).send("Error al iniciar sesión: " + err.message);
     }
 });
+
 
 /**
  * Ruta para cerrar sesion, la ruta no recibe parametros
  */
 app.post('/logOut', async (req, res) => {
     const auth = getAuth(firebaseApp);
+    const user = auth.currentUser;
+    if (!user) {
+        res.status(401).send("No hay cuenta iniciada");
+        return;
+    }
+
+    emailAntiguo = user.email;
     try {
         await signOut(auth);
-        res.status(200).send("Sesión cerrada con éxito! Nos vemos pronto :D");
+        res.status(200).send("Sesión cerrada con éxito! Nos vemos pronto " + emailAntiguo + " :D");
     } catch (err) {
         res.status(500).send("Error al cerrar sesión: " + err.message);
     }
@@ -100,20 +115,27 @@ app.post('/logOut', async (req, res) => {
  * Deberia revisar que el usuario existe en firebase primero
  */
 app.post('/createPost', createPostValidator, async (req, res) => {
-    const email = req.body.email;
+    const auth = getAuth(firebaseApp);
+    const user = auth.currentUser;
+
+    if (!user) {
+        res.status(401).send("Usuario no autenticado");
+        return;
+    }
+
     const titulo = req.body.titulo;
     const descripcion = req.body.descripcion;
 
     const post = new postUsuario({
         titulo: titulo,
         descripcion: descripcion,
-        usuarioEmail: email,
-        fechaPublicacion: { type: Date, default: Date.now }
+        usuarioEmail: user.email,
     });
 
     const response = await post.save();
-    res.status(200).send("Post creado con exito!");
-})
+    res.status(200).send("Post creado con éxito!");
+});
+
 
 /**
  * Ruta para listar todos los post de mongo
@@ -130,6 +152,22 @@ app.put('/editarPost/:id', editarPostValidator, async (req, res) => {
     const { id } = req.params;
     const post = await postUsuario.findById(id);
     const { titulo, descripcion } = req.body;
+
+    const auth = getAuth(firebaseApp);
+    const user = auth.currentUser;
+    if (!user) {
+        res.status(401).send("Usuario no autenticado");
+        return;
+    }
+
+    // Verificar si el usuario es el propietario del post
+    if (post.usuarioEmail !== user.email) {
+        res.status(403).send("No tienes permiso para editar este post");
+        return;
+    }
+
+
+
     if (titulo) {
         post.titulo = titulo;
     }
@@ -145,9 +183,24 @@ app.put('/editarPost/:id', editarPostValidator, async (req, res) => {
  */
 app.delete('/eliminarPost/:id', deletePostValidator, async (req, res) => {
     const { id } = req.params;
+
+    const post = await postUsuario.findById(id);
+
+    const auth = getAuth(firebaseApp);
+    const user = auth.currentUser;
+    if (!user) {
+        res.status(401).send("Usuario no autenticado");
+        return;
+    }
+
+    // Verificar si el usuario es el propietario del post
+    if (post.usuarioEmail !== user.email) {
+        res.status(403).send("No tienes permiso para eliminar este post");
+        return;
+    }
+
     await postUsuario.deleteOne({ _id: id });
     res.status(200).send("Eliminado con éxito!");
-
 })
 
 // Iniciar el servidor

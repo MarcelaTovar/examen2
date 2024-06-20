@@ -49,7 +49,9 @@ const postEsquema = new mongoose.Schema(
 
 const postUsuario = mongoose.model('post', postEsquema);
 
-// Ruta para crear usuario, la ruta recibe el email y la password del usuario
+/**
+ * Ruta para crear usuario, la ruta recibe el email y la password del usuario
+ */
 app.post('/createUser', CreateUserValidator, async (req, res) => {
     const auth = getAuth(firebaseApp);
     const email = req.body.email;
@@ -61,8 +63,9 @@ app.post('/createUser', CreateUserValidator, async (req, res) => {
         res.status(500).send("Usuario no creado con exito");
     }
 });
-
-// Ruta para loguear usuario, la ruta recibe el email y la password del usuario
+/**
+ * Ruta para loguear usuario, la ruta recibe el email y la password del usuario
+ */
 app.post('/logIn', LogInValidator, async (req, res) => {
     const auth = getAuth(firebaseApp);
     const email = req.body.email;
@@ -76,7 +79,9 @@ app.post('/logIn', LogInValidator, async (req, res) => {
     }
 });
 
-//Ruta para cerrar sesion, la ruta no recibe parametros
+/**
+ * Ruta para cerrar sesion, la ruta no recibe parametros
+ */
 app.post('/logOut', async (req, res) => {
     const auth = getAuth(firebaseApp);
     try {
@@ -87,8 +92,10 @@ app.post('/logOut', async (req, res) => {
     }
 });
 
-//Ruta para crear un post en mongo PREGUNTAR SI EL USUARIO DEBE MANDAR EL CORREO DEL USUARIO O SI ES EL USUARIO ACTUAL
-/**Deberia revisar que el usuario existe en firebase primero */
+/**
+ * Ruta para crear un post en mongo PREGUNTAR SI EL USUARIO DEBE MANDAR EL CORREO DEL USUARIO O SI ES EL USUARIO ACTUAL
+ * Deberia revisar que el usuario existe en firebase primero
+ */
 app.post('/createPost', createPostValidator, async (req, res) => {
     const email = req.body.email;
     const titulo = req.body.titulo;
@@ -97,20 +104,24 @@ app.post('/createPost', createPostValidator, async (req, res) => {
     const post = new postUsuario({
         titulo: titulo,
         descripcion: descripcion,
-        usuarioEmail: email
+        usuarioEmail: email,
+        fechaPublicacion: { type: Date, default: Date.now }
     });
 
     const response = await post.save();
     res.status(200).send("Post creado con exito!");
 })
 
-//Ruta para listar todos los post de mongo
+/**
+ * Ruta para listar todos los post de mongo
+ */
 app.get('/listarPost', listarPostValidator, async (req, res) => {
     const posts = await postUsuario.find();
     res.status(200).send(posts);
 })
-
-//Ruta para editar un post especifico en mongo
+/**
+ * Ruta para editar un post especifico en mongo
+ */
 app.put('/editarPost/:id', editarPostValidator, async (req, res) => {
     const { id } = req.params;
     const post = await postUsuario.findById(id);
@@ -125,13 +136,16 @@ app.put('/editarPost/:id', editarPostValidator, async (req, res) => {
     res.status(200).send("Actualizacion exitosa!")
 })
 
-//Ruta para eliminar un post en especifico en mongo
+/**
+ * Ruta para eliminar un post en especifico en mongo
+ */
 app.delete('/eliminarPost/:id', deletePostValidator, async (req, res) => {
     const { id } = req.params;
     await postUsuario.deleteOne({ _id: id });
     res.status(200).send("Eliminado con éxito!");
 
 })
+
 // Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor escuchando en http://localhost:${port}`);

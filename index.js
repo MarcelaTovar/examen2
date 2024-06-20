@@ -6,7 +6,7 @@ const { MongoClient } = require('mongodb');
 const mongoose = require('mongoose');
 
 const { initializeApp } = require("firebase/app");
-
+const { CreateUserValidator, LogInValidator, createPostValidator, listarPostValidator, editarPostValidator, deletePostValidator } = require('./validators/Validators')
 
 const firebaseConfig = {
     apiKey: "AIzaSyDpWoLxzEwA93vHht5InD3aLpFyTw6Nd84",
@@ -50,7 +50,7 @@ const postEsquema = new mongoose.Schema(
 const postUsuario = mongoose.model('post', postEsquema);
 
 // Ruta para crear usuario, la ruta recibe el email y la password del usuario
-app.post('/createUser', async (req, res) => {
+app.post('/createUser', CreateUserValidator, async (req, res) => {
     const auth = getAuth(firebaseApp);
     const email = req.body.email;
     const password = req.body.password;
@@ -63,7 +63,7 @@ app.post('/createUser', async (req, res) => {
 });
 
 // Ruta para loguear usuario, la ruta recibe el email y la password del usuario
-app.post('/logIn', async (req, res) => {
+app.post('/logIn', LogInValidator, async (req, res) => {
     const auth = getAuth(firebaseApp);
     const email = req.body.email;
     const password = req.body.password;
@@ -89,7 +89,7 @@ app.post('/logOut', async (req, res) => {
 
 //Ruta para crear un post en mongo PREGUNTAR SI EL USUARIO DEBE MANDAR EL CORREO DEL USUARIO O SI ES EL USUARIO ACTUAL
 /**Deberia revisar que el usuario existe en firebase primero */
-app.post('/createPost', async (req, res) => {
+app.post('/createPost', createPostValidator, async (req, res) => {
     const email = req.body.email;
     const titulo = req.body.titulo;
     const descripcion = req.body.descripcion;
@@ -105,13 +105,13 @@ app.post('/createPost', async (req, res) => {
 })
 
 //Ruta para listar todos los post de mongo
-app.get('/listarPost', async (req, res) => {
+app.get('/listarPost', listarPostValidator, async (req, res) => {
     const posts = await postUsuario.find();
     res.status(200).send(posts);
 })
 
 //Ruta para editar un post especifico en mongo
-app.put('/editarPost/:id', async (req, res) => {
+app.put('/editarPost/:id', editarPostValidator, async (req, res) => {
     const { id } = req.params;
     const post = await postUsuario.findById(id);
     const { titulo, descripcion } = req.body;
@@ -126,7 +126,7 @@ app.put('/editarPost/:id', async (req, res) => {
 })
 
 //Ruta para eliminar un post en especifico en mongo
-app.delete('/eliminarPost/:id', async (req, res) => {
+app.delete('/eliminarPost/:id', deletePostValidator, async (req, res) => {
     const { id } = req.params;
     await postUsuario.deleteOne({ _id: id });
     res.status(200).send("Eliminado con éxito!");

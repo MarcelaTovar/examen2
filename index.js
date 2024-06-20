@@ -88,6 +88,7 @@ app.post('/logOut', async (req, res) => {
 });
 
 //Ruta para crear un post en mongo PREGUNTAR SI EL USUARIO DEBE MANDAR EL CORREO DEL USUARIO O SI ES EL USUARIO ACTUAL
+/**Deberia revisar que el usuario existe en firebase primero */
 app.post('/createPost', async (req, res) => {
     const email = req.body.email;
     const titulo = req.body.titulo;

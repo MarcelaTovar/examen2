@@ -18,7 +18,7 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-const { getAuth, createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut } = require('firebase/auth')
+const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require('firebase/auth')
 
 //conexion de mongo
 const dbConnect = async () => {
@@ -88,15 +88,15 @@ app.post('/logOut', async (req, res) => {
 });
 
 //Ruta para crear un post en mongo PREGUNTAR SI EL USUARIO DEBE MANDAR EL CORREO DEL USUARIO O SI ES EL USUARIO ACTUAL
-app.post('/createPost', async (req,res)=>{
+app.post('/createPost', async (req, res) => {
     const email = req.body.email;
     const titulo = req.body.titulo;
     const descripcion = req.body.descripcion;
 
     const post = new postUsuario({
-        titulo:titulo,
-        descripcion:descripcion,
-        usuarioEmail:email
+        titulo: titulo,
+        descripcion: descripcion,
+        usuarioEmail: email
     });
 
     const response = await post.save();
@@ -104,24 +104,32 @@ app.post('/createPost', async (req,res)=>{
 })
 
 //Ruta para listar todos los post de mongo
-app.get('/listarPost', async (req,res) =>{
+app.get('/listarPost', async (req, res) => {
     const posts = await postUsuario.find();
     res.status(200).send(posts);
 })
 
 //Ruta para editar un post especifico en mongo
-app.put('/editarPost/:id', async(req,res)=>{
+app.put('/editarPost/:id', async (req, res) => {
     const { id } = req.params;
     const post = await postUsuario.findById(id);
     const { titulo, descripcion } = req.body;
-    if(titulo){
+    if (titulo) {
         post.titulo = titulo;
     }
-    if (descripcion){
+    if (descripcion) {
         post.descripcion = descripcion;
     }
     await post.save();
     res.status(200).send("Actualizacion exitosa!")
+})
+
+//Ruta para eliminar un post en especifico en mongo
+app.delete('/eliminarPost/:id', async (req, res) => {
+    const { id } = req.params;
+    await postUsuario.deleteOne({ _id: id });
+    res.status(200).send("Eliminado con éxito!");
+
 })
 // Iniciar el servidor
 app.listen(port, () => {
